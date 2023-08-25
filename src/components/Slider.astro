@@ -1,0 +1,124 @@
+<style>
+      .slides {
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .slides::-webkit-scrollbar {
+    width: 0px;
+  }
+  .slides > div {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+    transition: transform 0.5s;
+  }
+
+</style>
+
+<div class="slider" >
+    <div class="slides flex overflow-x-auto w-full 
+    [&>div]:grid-cols-[60%_40%] [&>div]:rounded-sm [&>div]:md:grid 
+    [&>div]:w-full md:[&>div]:max-h-[500px] [&>div]:h-[50] [&>div]:snap-center lg:[&>div>img]:max-h-[500px] sm:[&>div>img]:max-h-48 md:[&>div>img]:max-h-56 [&>div>img]:max-h-48  [&>div>img]:bg-contain [&>div>img]:w-full
+    " >
+        <div class="gap-5 bg-[#878E90] text-white" id="slide-1">
+            <img src="images/1.jpg" class=" h-full object-cover">
+            <h3 class="text-4xl hidden md:flex flex-col w-full px-7 pt-12 gap-16">
+                <b>
+                    Limpiezas con agua temperada.
+                </b>
+                <p class="text-xl">Servicio de excelencia y calidad.</p>
+            </h3>
+        </div>
+        <div class="gap-5 bg-[#878E90] text-white" id="slide-2">
+            <img src="images/23.jpg" class=" h-full object-cover">
+            <h3 class="text-4xl hidden md:flex flex-col w-full px-7 pt-12 gap-16">
+                <b>
+                    Lavado y desinfeccion
+                </b>
+                <p class="text-xl">Servicio de excelencia y calidad.</p>
+            </h3>
+        </div>
+        <div class="gap-5 bg-[#878E90] text-white" id="slide-3">
+            <img src="images/3.jpg" class=" h-full object-cover">
+            <h3 class="text-4xl hidden md:flex flex-col w-full px-7 pt-12 gap-16">
+                <b>
+                    Limpieza de tuberías con hidroyet.
+                    
+                </b>
+                <p class="text-xl">Servicio de excelencia y calidad.</p>
+            </h3>
+        </div>
+        <div class="gap-5 bg-[#878E90] text-white" id="slide-4">
+            <img src="images/18.jpg" class=" h-full object-cover">
+            <h3 class="text-4xl hidden md:flex flex-col w-full px-7 pt-12 gap-16">
+                <b>
+                    Desobtruccion de tuberías
+                </b>
+                <p class="text-xl">Servicio de excelencia y calidad.</p>
+            </h3>
+        </div>
+        <div class="gap-5 bg-[#878E90] text-white" id="slide-5">
+            <img src="images/25.jpg" class=" h-full object-cover">
+            <h3 class="text-4xl hidden md:flex flex-col w-full px-7 pt-12 gap-16">
+                <b>
+                    Limpieza de tuberías
+                </b>
+                <p class="text-xl">Servicio de excelencia y calidad.</p>
+            </h3>
+        </div>
+      </div>
+      <div class="slider-links hidden md:flex justify-center gap-10 text-center">
+        <h1 data-slide="slide-1" class="cursor-pointer rounded-full w-6 h-6 text-base bg-slate-700">1</h1>
+        <h1 data-slide="slide-2" class="cursor-pointer rounded-full w-6 h-6 text-base bg-slate-700">2</h1>
+        <h1 data-slide="slide-3" class="cursor-pointer rounded-full w-6 h-6 text-base bg-slate-700">3</h1>
+        <h1 data-slide="slide-4" class="cursor-pointer rounded-full w-6 h-6 text-base bg-slate-700">4</h1>
+        <h1 data-slide="slide-5" class="cursor-pointer rounded-full w-6 h-6 text-base bg-slate-700">5</h1>
+      </div>
+</div>
+
+<script>
+    const sliderLinks = document.querySelectorAll(".slider-links h1");
+
+    sliderLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const targetSlide = document.getElementById(link.getAttribute("data-slide"));
+        targetSlide.scrollIntoView({ behavior: "smooth" });
+      });
+    });
+  </script>
+
+  <script>
+    const slider = document.querySelector('.slider');
+const slides = document.querySelectorAll('.slides div');
+const slideWidth = slider.clientWidth; // Ancho de cada diapositiva
+let currentSlide = 0; // Índice de la diapositiva actual
+
+// Función para avanzar al siguiente slide
+function nextSlide() {
+    console.log(slides)
+    currentSlide++;
+    if (currentSlide >= slides.length) {
+        currentSlide = 0;
+    }
+    updateSlider();
+}
+
+// Función para actualizar la posición del slider
+function updateSlider() {
+}
+
+// Configura un intervalo para avanzar automáticamente
+let interval = setInterval(nextSlide, 5000); // Cambia de slide cada 5 segundos
+
+// Detiene la animación al pasar el mouse sobre el slider
+slider.addEventListener('mouseenter', () => {
+    clearInterval(interval);
+});
+
+// Reanuda la animación cuando se retira el mouse del slider
+slider.addEventListener('mouseleave', () => {
+    interval = setInterval(nextSlide, 5000);
+});
+  </script>
