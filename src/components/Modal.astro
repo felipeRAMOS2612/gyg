@@ -19,8 +19,8 @@ const { video } = Astro.props;
         </button>
         <!-- Item 1 -->
         <div class="duration-700 md:h-[94%] h-full ease-in-out">
-          <video class="block h-full mx-auto" controls >
-            <source src="./video/video-2.mp4" />
+          <video class="block h-full mx-auto" controls muted>
+            <source src={video} />
           </video>
         </div>
     </div>  
