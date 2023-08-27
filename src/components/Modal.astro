@@ -1,0 +1,29 @@
+---
+export interface props {
+  video: string;
+  modal: string;
+}
+
+const { video } = Astro.props;
+---
+ 
+<div class="fixed top-16 md:w-[890px] w-11/12 mx-auto">
+  
+  <!-- Carousel wrapper -->
+    <div class="relative w-screen h-[90vh] md:h-screen rounded-lg ">
+        <button @click="showModal = false, showSecondModal = false" type="button" class="z-50 absolute right-0 top-0 text-white bg-slate-600 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center">
+            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+            <span class="sr-only">Close modal</span>
+        </button>
+        <!-- Item 1 -->
+        <div class="duration-700 md:h-[94%] h-full ease-in-out">
+          <video class="block h-full mx-auto" controls >
+            <source src="./video/video-2.mp4" />
+          </video>
+        </div>
+    </div>  
+</div>
+
+  
