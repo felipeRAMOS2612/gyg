@@ -4,10 +4,12 @@
             <button @click.prevent ="isOpen = !isOpen" class="z-50 relative md:hidden text-white"><ion-icon size="large" aria-hidden="true" name="menu" :name="isOpen?'menu' : 'close'"></ion-icon></button>
         </div>
         <div class="block md:hidden">
-            <h2 class="text-xl text-center z-50 relative font-medium italic leading-5 text-white">G&G <br>INGENIERIA</h2>
+            <h2 class="text-xl text-center z-50 relative font-medium italic leading-5 text-white">G&G <br>INGENIERÍA</h2>
         </div>
         <div>
-            <img class="md:w-16 w-14 md:h-auto z-50 relative" src="logo-removebg.png" />
+            <a href="#inicio" class="smooth_link">
+                <img class="md:w-16 w-14 md:h-auto z-50 relative" src="logo-removebg.png" />
+            </a>
         </div>
         <div 
         class="md:static absolute top-0 transition-all pt-12 md:pt-0 duration-100 
@@ -20,17 +22,17 @@
             pt-12 h-2 hover:[&>a]text-[#f65757] [&>a]:mt-5 md:[&>a]:w-36 [&>a]:p-3 [&>a]:w-full md:text-center
             max-sm:[&>a]:bg-gray-400 [&>a]:rounded-sm max-sm:[&>a]:border-l-4 max-sm:[&>a]:border-l-gray-300
             w-full md:text-white text-black" >
-            <a class=" transition-all duration-100 nav_link" href="#inicio">
+            <a class=" transition-all duration-100 nav_link smooth_link" href="#inicio">
                 <li class=" w-full md:w-auto">
                     Inicio
                 </li>
             </a>
-            <a class=" transition-all duration-100 nav_link" href="#quienes_somos">
+            <a class=" transition-all duration-100 nav_link smooth_link" href="#quienes_somos">
                 <li class=" w-full md:w-auto">
                     Quiénes somos
                 </li>
             </a>
-            <a class=" transition-all duration-100 nav_link" href="#contacto">
+            <a class=" transition-all duration-100 nav_link smooth_link" href="#contacto">
                 <li class=" w-full md:w-auto">
                     Contacto
                 </li>
@@ -79,7 +81,7 @@
     }
 
     // Obtén todos los enlaces del menú
-    const menuLinks = document.querySelectorAll('.nav_link');
+    const menuLinks = document.querySelectorAll('.smooth_link');
 
     // Agrega un evento clic a cada enlace
     menuLinks.forEach((link) => {
