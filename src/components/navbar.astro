@@ -20,17 +20,17 @@
             pt-12 h-2 hover:[&>a]text-[#f65757] [&>a]:mt-5 md:[&>a]:w-36 [&>a]:p-3 [&>a]:w-full md:text-center
             max-sm:[&>a]:bg-gray-400 [&>a]:rounded-sm max-sm:[&>a]:border-l-4 max-sm:[&>a]:border-l-gray-300
             w-full md:text-white text-black" >
-            <a class=" transition-all duration-100 link" href="#inicio">
+            <a class=" transition-all duration-100 nav_link" href="#inicio">
                 <li class=" w-full md:w-auto">
                     Inicio
                 </li>
             </a>
-            <a class=" transition-all duration-100 link" href="#quienes_somos">
+            <a class=" transition-all duration-100 nav_link" href="#quienes_somos">
                 <li class=" w-full md:w-auto">
                     Quiénes somos
                 </li>
             </a>
-            <a class=" transition-all duration-100 link" href="#contacto">
+            <a class=" transition-all duration-100 nav_link" href="#contacto">
                 <li class=" w-full md:w-auto">
                     Contacto
                 </li>
@@ -47,7 +47,7 @@
 </header>
 
 <script>
-    const listItem = document.querySelectorAll('a')
+    const listItem = document.querySelectorAll('.nav_link')
     const menuBackdrop = document.querySelector('#menu-backdrop') as HTMLElement
     listItem.forEach((item) => {
         item.addEventListener('mouseenter', () => {
