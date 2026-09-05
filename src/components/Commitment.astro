@@ -1,0 +1,107 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import foamPhoto from '../assets/limpieza-superficie-espuma.jpeg';
+
+/**
+ * Company commitments. The five points come from the copy provided by the
+ * client; each carries a short supporting line so the list reads as substance
+ * rather than a set of slogans.
+ */
+const commitments = [
+  {
+    title: 'Personal capacitado y comprometido',
+    body: 'Cuadrillas formadas en trabajo industrial, con protocolos de seguridad en cada faena.',
+  },
+  {
+    title: 'Trabajo profesional y responsable',
+    body: 'Plazos definidos, alcance claro y coordinación para no interferir con tu operación.',
+  },
+  {
+    title: 'Maquinaria de alto rendimiento',
+    body: 'Equipos propios de alta presión, mantenidos por nosotros. Sin subcontratos ni esperas.',
+  },
+  {
+    title: 'Mayor eficacia y excelentes resultados',
+    body: 'Procedimientos probados que resuelven en una intervención lo que otros dejan a medias.',
+  },
+  {
+    title: 'Limpieza y desinfección de espacios industriales',
+    body: 'Tuberías, estanques y superficies: cobertura completa para instalaciones exigentes.',
+  },
+];
+---
+
+<section id="compromiso" class="section bg-white">
+  <div class="shell">
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.72fr)] lg:items-center lg:gap-16">
+      <div>
+        <p class="eyebrow animate-reveal reveal-fade">Nuestro compromiso</p>
+        <h2
+          class="animate-reveal reveal-clip mt-5 font-display text-[clamp(1.85rem,4vw,2.9rem)] font-bold leading-[1.1]"
+          style="--reveal-delay:90ms"
+        >
+          Especialistas en limpieza y desinfección industrial
+        </h2>
+        <p
+          class="animate-reveal mt-6 max-w-xl text-base leading-relaxed text-ink-600"
+          style="--reveal-delay:190ms"
+        >
+          Trabajamos con compromiso, tecnología y dedicación para entregar un servicio de calidad en
+          cada labor. Nosotros hacemos el trabajo pesado para que tu empresa siga avanzando.
+        </p>
+      </div>
+
+      <figure
+        class="animate-reveal reveal-clip group overflow-hidden rounded-lg bg-ink-100"
+        style="--reveal-delay:260ms"
+      >
+        <Image
+          src={foamPhoto}
+          alt="Operario de G&G Ingeniería aplicando espuma de limpieza sobre una superficie industrial"
+          widths={[500, 900]}
+          sizes="(min-width: 1024px) 480px, 92vw"
+          format="webp"
+          quality={72}
+          loading="lazy"
+          decoding="async"
+          class="aspect-16/10 max-h-80 w-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-105 lg:max-h-none"
+        />
+      </figure>
+    </div>
+
+    <!--
+      Five cards across on wide screens. Below xl they fall back to two columns,
+      where the odd fifth card stretches to fill the row rather than leaving a
+      hole beside it.
+    -->
+    <ul
+      class="reveal-stagger mt-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-5"
+      style="--reveal-step:70ms"
+    >
+      {
+        commitments.map((item, index) => (
+          <li
+            class:list={[
+              'animate-reveal group flex flex-col rounded-lg border border-ink-200 bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-ink-300 hover:shadow-lg hover:shadow-ink-900/5',
+              index === commitments.length - 1 && 'sm:col-span-2 xl:col-span-1',
+            ]}
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-display text-sm font-bold tabular-nums text-accent-500">
+                0{index + 1}
+              </span>
+              <Icon
+                name="check"
+                class="h-3.5 w-3.5 text-ink-300 transition-colors duration-300 group-hover:text-accent-500"
+              />
+            </div>
+
+            <h3 class="mt-4 font-display text-[0.95rem] font-bold leading-snug">{item.title}</h3>
+            <p class="mt-2 text-[0.8rem] leading-relaxed text-ink-600">{item.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>

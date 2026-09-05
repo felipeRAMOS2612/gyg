@@ -1,38 +1,131 @@
---- 
+---
+import '../styles/global.css';
+import { site } from '../lib/site';
+
 interface Props {
-	title: string;
+  title?: string;
+  description?: string;
 }
 
-const { title } = Astro.props;
+const { title = `${site.name} · ${site.tagline}`, description = site.description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://gyg-ingenieria.com').href;
 ---
 
-<!DOCTYPE html>
-<html lang="es" class=" scroll-smooth">
-	<head>
-		<meta charset="UTF-8" />
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/png" href="/logo-removebg.png" />
+    <meta name="theme-color" content="#0a263b" />
 
-		<meta name="description" content="Astro description">
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/logo-removebg.png" />
-		<meta name="generator" content={Astro.generator} />
-		<script src="//unpkg.com/alpinejs" defer></script>
-		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js"></script>
-		<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" integrity="sha512-3gJwYpMe3QewGELv8k/BX9vcqhryRdzRMxVfq6ngyWXwo03GFEzjsUm8Q7RZcHPHksttq7/GFoxjCVUjkjvPdw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-		<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-		<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-		<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-			'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-			})(window,document,'script','dataLayer','GTM-M35MPZM9');</script>
-		<title>{title}</title>
-	</head>
-	<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.0/flowbite.min.js"></script>
-	<body class=" scroll-smooth">
-		<slot />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/images/imagen-portada.jpeg', canonical).href} />
+    <meta name="twitter:card" content="summary_large_image" />
 
-	</body>
-	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-M35MPZM9"
-		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+    />
+
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: site.name,
+        description: site.description,
+        telephone: site.phone,
+        email: site.email,
+        url: 'https://gyg-ingenieria.com',
+        areaServed: 'CL',
+      })}
+    />
+
+    <!--
+      Reveal safety net. The class turns the hiding rules on before first paint;
+      the timer guarantees nothing stays hidden if the module below never runs
+      or the observer never fires for some element. Inline on purpose: a bundled
+      script that fails to load could not rescue itself.
+    -->
+    <script is:inline>
+      document.documentElement.classList.add('js-reveal');
+      setTimeout(function () {
+        var stuck = document.querySelectorAll('.animate-reveal:not(.is-visible)');
+        for (var i = 0; i < stuck.length; i++) stuck[i].classList.add('is-visible');
+      }, 2500);
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script is:inline>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-M35MPZM9');
+    </script>
+  </head>
+
+  <body class="bg-white text-ink-800 antialiased">
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-M35MPZM9"
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"></iframe></noscript
+    >
+
+    <a
+      href="#servicios"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent-500 focus:px-5 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+    >
+      Saltar al contenido
+    </a>
+
+    <slot />
+
+    <script>
+      // Progressive scroll reveal. The hiding rules only apply once <html> has
+      // the js-reveal class, and an inline watchdog in <head> reveals anything
+      // still hidden after 2.5s, so this can only ever add polish.
+      const reveal = () => {
+        const targets = document.querySelectorAll('.animate-reveal');
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            });
+          },
+          // threshold 0 on purpose: an area-based threshold can never be met by
+          // an element taller than the viewport, which would leave it hidden.
+          { rootMargin: '0px 0px -10% 0px', threshold: 0 },
+        );
+        targets.forEach((el) => observer.observe(el));
+      };
+
+      reveal();
+    </script>
+  </body>
 </html>

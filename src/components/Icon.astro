@@ -1,0 +1,25 @@
+---
+import { iconPaths, solidIcons, type IconName } from '../lib/icons';
+
+interface Props {
+  name: IconName;
+  class?: string;
+}
+
+const { name, class: className = 'h-5 w-5' } = Astro.props;
+const solid = solidIcons.includes(name);
+---
+
+<svg
+  class={className}
+  viewBox="0 0 24 24"
+  fill={solid ? 'currentColor' : 'none'}
+  stroke={solid ? 'none' : 'currentColor'}
+  stroke-width="1.7"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path d={iconPaths[name]} />
+</svg>

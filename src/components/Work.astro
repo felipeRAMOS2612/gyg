@@ -1,0 +1,181 @@
+---
+import Icon from './Icon.astro';
+import poster from '../assets/video-poster.jpg';
+import { getGeneralMedia, videoFrameUrl, type MediaKind } from '../lib/media';
+
+interface WorkItem {
+  key: string;
+  kind: MediaKind;
+  url: string;
+  /** Only the bundled fallback has a still frame; `media` has no poster column. */
+  poster?: string;
+  /** Known aspect ratio, when there is one before metadata loads. */
+  ratio?: string;
+  portrait: boolean;
+  /** Accessibility text. */
+  alt: string | null;
+  /** Visitor-facing caption. */
+  caption: string | null;
+}
+
+// Build-time fetch of the landing's general media: every row whose service_id
+// is null, images and videos alike, in the order the admin arranged them.
+const media = await getGeneralMedia();
+
+// The bundled clip stays as the fallback so the section never renders empty
+// while the admin has no general media uploaded. The poster is a frame from
+// that clip, so its dimensions are a build-time source of truth for the
+// orientation and the frame is correct on first paint.
+const fallback: WorkItem = {
+  key: 'fallback',
+  kind: 'video',
+  url: '/video/video-1.mp4',
+  poster: poster.src,
+  ratio: `${poster.width} / ${poster.height}`,
+  portrait: poster.height > poster.width,
+  alt: 'Limpieza con hydrojet en terreno',
+  caption: 'Limpieza con hydrojet',
+};
+
+const items: WorkItem[] =
+  media.length > 0
+    ? media.map((asset) => ({
+        key: asset.id,
+        kind: asset.kind,
+        // A video with no poster needs a media fragment, otherwise the browser
+        // paints a black rectangle until playback starts.
+        url: asset.kind === 'video' ? videoFrameUrl(asset.url) : asset.url,
+        portrait: false,
+        alt: asset.alt?.trim() || null,
+        caption: asset.description?.trim() || null,
+      }))
+    : [fallback];
+
+const multiple = items.length > 1;
+---
+
+<section id="trabajos" class="section border-y border-ink-200 bg-ink-50">
+  <div class="shell">
+    <div class="max-w-2xl">
+      <p class="eyebrow animate-reveal reveal-fade">En terreno</p>
+      <h2
+        class="animate-reveal reveal-clip mt-5 font-display text-[clamp(1.85rem,4vw,2.9rem)] font-bold leading-[1.1]"
+        style="--reveal-delay:90ms"
+      >
+        Nuestro trabajo, en operación
+      </h2>
+    </div>
+
+    <div
+      class:list={[
+        'reveal-stagger mt-10',
+        multiple ? 'grid gap-8 md:grid-cols-2' : 'grid gap-8',
+      ]}
+      style="--reveal-step:90ms"
+    >
+      {
+        items.map((item) => (
+          <figure
+            class="clip-frame animate-reveal reveal-scale overflow-hidden rounded-xl border border-ink-200 bg-white shadow-xl shadow-ink-900/5"
+          >
+            {/*
+              The frame takes its shape from the file, not the other way round.
+              Phone footage often ships as landscape pixels plus a 90° rotation
+              matrix, so assuming 16:9 crops it badly; the ratio is read from the
+              loaded metadata and a portrait clip is sized by height instead of
+              width.
+            */}
+            <div
+              data-clip-stage
+              data-portrait={item.portrait ? '' : undefined}
+              style={item.ratio ? `--clip-ratio:${item.ratio}` : undefined}
+              class="clip-stage group relative bg-ink-900"
+            >
+              {item.kind === 'video' ? (
+                <>
+                  <video
+                    data-clip
+                    class="h-full w-full object-contain"
+                    src={item.url}
+                    poster={item.poster}
+                    aria-label={item.alt ?? undefined}
+                    preload="metadata"
+                    playsinline
+                    controls
+                  />
+
+                  <button
+                    type="button"
+                    data-clip-play
+                    class="absolute inset-0 grid place-items-center bg-ink-950/40 transition duration-500 hover:bg-ink-950/20"
+                  >
+                    <span class="sr-only">Reproducir el video</span>
+                    <span
+                      class="relative inline-flex h-16 w-16 items-center justify-center rounded-full bg-accent-500 text-white transition duration-500 group-hover:scale-110"
+                    >
+                      <span class="absolute inset-0 animate-ping rounded-full bg-accent-500/40" />
+                      <Icon name="play" class="relative h-6 w-6 translate-x-0.5" />
+                    </span>
+                  </button>
+                </>
+              ) : (
+                /*
+                  Plain <img> rather than <Image />: a remote source that does
+                  not answer during the build aborts astro:assets, and general
+                  media is not probed the way service covers are.
+                */
+                <img
+                  src={item.url}
+                  alt={item.alt ?? item.caption ?? ''}
+                  loading="lazy"
+                  decoding="async"
+                  class="h-full w-full object-contain"
+                />
+              )}
+            </div>
+
+            {item.caption && (
+              <figcaption class="px-6 py-5 font-display text-base font-bold text-ink-900">
+                {item.caption}
+              </figcaption>
+            )}
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  // The video loads metadata only: enough to know its real display dimensions
+  // without downloading the whole file. Playback still waits for the button.
+  const stages = document.querySelectorAll<HTMLElement>('[data-clip-stage]');
+  const videos: HTMLVideoElement[] = [];
+
+  stages.forEach((stage) => {
+    const video = stage.querySelector<HTMLVideoElement>('[data-clip]');
+    const button = stage.querySelector<HTMLButtonElement>('[data-clip-play]');
+    if (!video) return;
+    videos.push(video);
+
+    const applyRatio = () => {
+      const { videoWidth: w, videoHeight: h } = video;
+      if (!w || !h) return;
+      stage.style.setProperty('--clip-ratio', `${w} / ${h}`);
+      stage.toggleAttribute('data-portrait', h > w);
+    };
+
+    if (video.readyState >= 1) applyRatio();
+    video.addEventListener('loadedmetadata', applyRatio, { once: true });
+
+    button?.addEventListener('click', () => {
+      button.hidden = true;
+      void video.play();
+    });
+
+    // Two clips playing at once is never what the visitor asked for.
+    video.addEventListener('play', () => {
+      videos.forEach((other) => other !== video && other.pause());
+    });
+  });
+</script>

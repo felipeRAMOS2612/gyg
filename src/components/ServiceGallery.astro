@@ -1,0 +1,214 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { Service } from '../lib/services';
+import { videoFrameUrl } from '../lib/media';
+
+interface Props {
+  service: Service;
+}
+
+type Asset = Service['media'][number];
+
+const { service } = Astro.props;
+const multiple = service.media.length > 1;
+
+/** Spanish noun for the asset kind, used in fallback copy and the counter. */
+const nounFor = (asset: Asset) => (asset.kind === 'video' ? 'video' : 'imagen');
+
+/**
+ * Caption shown under the stage. The admin's description is the real label;
+ * the numbered form is only a fallback for rows that do not have one yet.
+ */
+const captionFor = (asset: Asset, index: number) =>
+  `${service.name} — ${asset.description?.trim() || `${nounFor(asset)} ${index + 1}`}`;
+
+/** Alt text prefers an explicit alt, then the description, then the fallback. */
+const altFor = (asset: Asset, index: number) =>
+  asset.alt?.trim() ||
+  asset.description?.trim() ||
+  `${service.name} — ${nounFor(asset)} ${index + 1}`;
+
+// The stage never exceeds the dialog's 72rem cap.
+const stageSizes = '(min-width: 1152px) 1100px, 94vw';
+---
+
+<!--
+  `m-auto` is not decorative: Tailwind's preflight zeroes every margin, which
+  wipes out the user-agent's `margin: auto` on <dialog> and leaves the modal
+  pinned to the left edge. The panel caps its own height against the viewport so
+  the stage shrinks instead of the dialog growing a scrollbar.
+-->
+<dialog
+  data-gallery={service.slug}
+  aria-label={`Galería de ${service.name}`}
+  class="gallery-dialog"
+>
+  <div
+    class="flex max-h-full w-full max-w-6xl flex-col overflow-hidden rounded-xl border border-white/10 bg-ink-950 shadow-2xl"
+  >
+    <header
+      class="flex shrink-0 items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6"
+    >
+      <div class="min-w-0">
+        <h3 class="truncate font-display text-base font-bold text-white sm:text-lg">
+          {service.name}
+        </h3>
+        <p class="mt-1 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-ink-400">
+          <span data-gallery-noun>{service.media[0] ? nounFor(service.media[0]) : 'imagen'}</span>
+          <span data-gallery-counter>1</span> de {service.media.length}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        data-gallery-close
+        class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-white/20 text-white transition hover:rotate-90 hover:border-white/50 hover:bg-white/10"
+      >
+        <span class="sr-only">Cerrar galería</span>
+        <Icon name="close" class="h-4 w-4" />
+      </button>
+    </header>
+
+    <div
+      data-gallery-stage
+      class="relative aspect-4/3 min-h-0 touch-pan-y overflow-hidden bg-ink-900 sm:aspect-16/10"
+    >
+      {
+        service.media.map((asset, index) => (
+          <figure
+            class="gallery-slide"
+            data-caption={captionFor(asset, index)}
+            data-noun={nounFor(asset)}
+            data-active={index === 0 ? '' : undefined}
+          >
+            {asset.kind === 'video' ? (
+              /*
+                No poster column exists, so the media fragment makes the browser
+                seek and decode a real frame instead of painting black.
+              */
+              <video
+                data-gallery-video
+                src={videoFrameUrl(asset.url)}
+                aria-label={altFor(asset, index)}
+                preload="metadata"
+                playsinline
+                controls
+                class="h-full w-full object-contain"
+              />
+            ) : asset.optimizable ? (
+              <Image
+                src={asset.url}
+                alt={altFor(asset, index)}
+                inferSize
+                widths={[600, 1000, 1400]}
+                sizes={stageSizes}
+                format="webp"
+                quality={78}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                class="h-full w-full object-contain"
+              />
+            ) : (
+              <img
+                src={asset.url}
+                alt={altFor(asset, index)}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
+                class="h-full w-full object-contain"
+              />
+            )}
+          </figure>
+        ))
+      }
+
+      {
+        multiple && (
+          <>
+            <button
+              type="button"
+              data-gallery-prev
+              class="group absolute left-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/20 bg-ink-950/70 text-white backdrop-blur-sm transition hover:border-white/50 hover:bg-ink-950"
+            >
+              <span class="sr-only">Imagen anterior</span>
+              <Icon
+                name="chevron-left"
+                class="h-5 w-5 transition-transform duration-300 group-hover:-translate-x-0.5"
+              />
+            </button>
+            <button
+              type="button"
+              data-gallery-next
+              class="group absolute right-3 top-1/2 inline-flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-md border border-white/20 bg-ink-950/70 text-white backdrop-blur-sm transition hover:border-white/50 hover:bg-ink-950"
+            >
+              <span class="sr-only">Imagen siguiente</span>
+              <Icon
+                name="chevron-right"
+                class="h-5 w-5 transition-transform duration-300 group-hover:translate-x-0.5"
+              />
+            </button>
+          </>
+        )
+      }
+    </div>
+
+    <footer class="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 border-t border-white/10 px-5 py-4 sm:px-6">
+      <p data-gallery-caption class="flex-1 text-sm text-ink-300"></p>
+
+      {
+        multiple && (
+          <>
+            <div class="flex w-full gap-2 overflow-x-auto sm:w-auto sm:order-first">
+              {service.media.map((asset, index) => (
+                <button
+                  type="button"
+                  data-gallery-thumb={index}
+                  class="relative h-12 w-16 shrink-0 overflow-hidden rounded border border-transparent opacity-45 transition duration-300 data-[active]:border-accent-500 data-[active]:opacity-100 hover:opacity-100"
+                  data-active={index === 0 ? '' : undefined}
+                >
+                  <span class="sr-only">
+                    Ver {nounFor(asset)} {index + 1}
+                  </span>
+                  {asset.kind === 'video' ? (
+                    <>
+                      {/* Muted and inert: the thumbnail only paints a frame. */}
+                      <video
+                        src={videoFrameUrl(asset.url)}
+                        preload="metadata"
+                        muted
+                        playsinline
+                        tabindex="-1"
+                        aria-hidden="true"
+                        class="pointer-events-none h-full w-full object-cover"
+                      />
+                      <span class="pointer-events-none absolute inset-0 grid place-items-center bg-ink-950/35">
+                        <Icon name="play" class="h-3.5 w-3.5 translate-x-px text-white" />
+                      </span>
+                    </>
+                  ) : asset.optimizable ? (
+                    <Image
+                      src={asset.url}
+                      alt=""
+                      inferSize
+                      width={128}
+                      format="webp"
+                      quality={60}
+                      loading="lazy"
+                      class="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <img src={asset.url} alt="" loading="lazy" class="h-full w-full object-cover" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <p class="hidden shrink-0 text-[0.65rem] font-medium uppercase tracking-[0.15em] text-ink-500 lg:block">
+              ← → para navegar · Esc para cerrar
+            </p>
+          </>
+        )
+      }
+    </footer>
+  </div>
+</dialog>

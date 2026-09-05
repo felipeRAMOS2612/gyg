@@ -1,0 +1,513 @@
+@import 'tailwindcss';
+
+/*
+ * Safelist. These utilities are only ever applied from JavaScript (the header
+ * inverting between the dark hero and the solid white scrolled bar, and the
+ * active nav underline), so Tailwind's source scanning cannot find them.
+ */
+@source inline("bg-white/95 backdrop-blur-md border-ink-200 text-ink-900 text-ink-600 text-white text-white/75 border-white/25 scale-x-100");
+
+/*
+ * Design tokens.
+ *
+ * The three brand colours are unchanged from the original site — deep navy
+ * #0A263B, steel #3b566e and coral #f65757. They are expanded into full scales
+ * so contrast can be tuned per surface instead of hardcoding one-off opacities.
+ *
+ * The site reads light: white and pale-navy surfaces carry most of the page,
+ * with the deep navy reserved for anchor bands (hero, slogan, contact, footer).
+ */
+@theme {
+  --color-ink-50: #f5f8fa;
+  --color-ink-100: #e8eef4;
+  --color-ink-200: #cfdde8;
+  --color-ink-300: #a6becf;
+  --color-ink-400: #6f8ea8;
+  --color-ink-500: #4a6c88;
+  --color-ink-600: #35536e;
+  --color-ink-700: #244057;
+  --color-ink-800: #143148;
+  --color-ink-900: #0a263b;
+  --color-ink-950: #061725;
+
+  --color-steel-200: #ccd6df;
+  --color-steel-300: #93a8bc;
+  --color-steel-400: #6c86a0;
+  --color-steel-500: #3b566e;
+  --color-steel-600: #31485d;
+
+  --color-accent-400: #ff7878;
+  --color-accent-500: #f65757;
+  --color-accent-600: #dd3b3b;
+  --color-accent-700: #b62c2c;
+
+  --font-display: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+  --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Offset anchor targets so the fixed header never covers a heading. */
+    scroll-padding-top: 5.5rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: white;
+    color: var(--color-ink-800);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink-900);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-500);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background-color: var(--color-ink-900);
+    color: white;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-ink-100);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-300);
+    border: 2px solid var(--color-ink-100);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-400);
+  }
+}
+
+@layer components {
+  /* Repeated section rhythm: one place to retune vertical spacing. */
+  .section {
+    /* Two adjacent sections stack their padding, so this value is effectively
+       doubled between bands: 4.25rem here reads as ~136px of separation at
+       desktop, which is the airiest the rhythm should get. */
+    padding-block: clamp(2.75rem, 4.5vw, 4.25rem);
+  }
+
+  .shell {
+    width: min(100% - 2.5rem, 76rem);
+    margin-inline: auto;
+  }
+
+  /* Small uppercase section label with a short coral rule that draws itself. */
+  .eyebrow {
+    display: inline-flex;
+    /* Start-aligned so the rule tracks the first line when the label wraps. */
+    align-items: start;
+    gap: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+  }
+
+  .eyebrow::before {
+    content: '';
+    /* flex: none — as a flex item the rule would otherwise be squeezed by a
+       long label, shrinking from 24px to ~14px on narrow screens. */
+    flex: none;
+    width: 1.5rem;
+    height: 2px;
+    margin-top: 0.7em;
+    margin-top: calc((1lh - 2px) / 2);
+    background: var(--color-accent-500);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.7s var(--ease-out-expo) 0.15s;
+  }
+
+  .eyebrow.is-visible::before,
+  .is-visible .eyebrow::before {
+    transform: scaleX(1);
+  }
+
+  .eyebrow-invert {
+    color: var(--color-ink-300);
+  }
+
+  /* Faint technical grid, used only on the dark bands. */
+  .blueprint {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  /*
+   * Copy that sits directly on a photograph. A soft shadow carries the
+   * legibility so the scrims above the image can stay light — on mobile these
+   * bands are nearly portrait, which already crops a landscape frame hard, and
+   * a heavy wash on top of that leaves nothing of the photo visible.
+   */
+  .copy-on-photo {
+    text-shadow:
+      0 1px 2px rgb(6 23 37 / 0.55),
+      0 4px 20px rgb(6 23 37 / 0.6);
+  }
+
+  /*
+   * A second photograph laid over the contact background. Hard edges would read
+   * as a sticker, so both axes are feathered: the left edge dissolves into the
+   * copy column and the top and bottom fade into the band, leaving no visible
+   * boundary anywhere except the viewport edge it bleeds off.
+   *
+   * The two axes are masked on two nested elements rather than as two layers of
+   * one mask. `mask-composite: intersect` cannot express this: the bottom layer
+   * composites against transparent black, so intersecting there yields an empty
+   * mask and the figure disappears entirely. Nesting needs no compositing at
+   * all — each element carries one gradient, and the alphas multiply.
+   */
+  .contact-figure {
+    mask-image: linear-gradient(to right, transparent 0%, rgb(0 0 0 / 0.55) 14%, #000 32%);
+  }
+
+  .contact-figure-fade {
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 13%, #000 78%, transparent 100%);
+  }
+
+  /* Primary button with a light sweep on hover. */
+  .btn-sweep {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .btn-sweep::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(110deg, transparent 25%, rgb(255 255 255 / 0.28) 50%, transparent 75%);
+    transform: translateX(-120%);
+    transition: transform 0.7s var(--ease-out-expo);
+  }
+
+  .btn-sweep:hover::after {
+    transform: translateX(120%);
+  }
+}
+
+/*
+ * Scroll reveal system.
+ *
+ * One base class plus direction modifiers, driven by the IntersectionObserver
+ * in Layout.astro. `.reveal-stagger` cascades its direct children so lists and
+ * grids do not need a hand-written delay on every item.
+ */
+@layer utilities {
+  /*
+   * Every hiding rule is gated behind `html.js-reveal`, which an inline script
+   * in <head> sets before first paint. Without it the content simply renders —
+   * the reveal is decoration, and decoration must never be the only thing
+   * making content visible. `:where()` keeps specificity at zero so the
+   * `.is-visible` rules below still win exactly as before.
+   */
+  :where(html.js-reveal) .animate-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.75s var(--ease-out-expo),
+      transform 0.75s var(--ease-out-expo),
+      clip-path 0.9s var(--ease-out-expo);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  :where(html.js-reveal) .reveal-left {
+    transform: translateX(-28px);
+  }
+
+  :where(html.js-reveal) .reveal-right {
+    transform: translateX(28px);
+  }
+
+  :where(html.js-reveal) .reveal-scale {
+    transform: scale(0.94);
+  }
+
+  :where(html.js-reveal) .reveal-fade {
+    transform: none;
+  }
+
+  /*
+   * Wipes the element in from the bottom edge — used on headings and images.
+   * The resting state uses a small negative inset rather than inset(0) so the
+   * clip never cuts descenders, focus rings or hover shadows once it settles.
+   */
+  :where(html.js-reveal) .reveal-clip {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(-0.3em -0.3em 100% -0.3em);
+  }
+
+  .animate-reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  .reveal-clip.is-visible {
+    clip-path: inset(-0.3em);
+  }
+
+  .reveal-stagger > * {
+    --reveal-delay: calc(var(--reveal-step, 70ms) * var(--reveal-index, 0));
+  }
+
+  .reveal-stagger > *:nth-child(1) {
+    --reveal-index: 0;
+  }
+  .reveal-stagger > *:nth-child(2) {
+    --reveal-index: 1;
+  }
+  .reveal-stagger > *:nth-child(3) {
+    --reveal-index: 2;
+  }
+  .reveal-stagger > *:nth-child(4) {
+    --reveal-index: 3;
+  }
+  .reveal-stagger > *:nth-child(5) {
+    --reveal-index: 4;
+  }
+  .reveal-stagger > *:nth-child(6) {
+    --reveal-index: 5;
+  }
+  .reveal-stagger > *:nth-child(7) {
+    --reveal-index: 6;
+  }
+  .reveal-stagger > *:nth-child(8) {
+    --reveal-index: 7;
+  }
+  .reveal-stagger > *:nth-child(n + 9) {
+    --reveal-index: 8;
+  }
+}
+
+/*
+ * Video frame that follows the clip's real orientation.
+ *
+ * Landscape clips fill the available width. Portrait clips are sized by height
+ * instead — a 9:16 video across a 56rem column would be over 1500px tall — and
+ * centre themselves, so neither orientation is ever cropped.
+ */
+.clip-frame {
+  width: 100%;
+  max-width: 56rem;
+  margin-inline: auto;
+}
+
+/*
+ * A portrait clip shrinks its frame to the video instead of leaving a wide
+ * white card around a narrow picture. `:has()` keeps this tied to the stage's
+ * own attribute, so it still follows if the script corrects the orientation
+ * after reading the real metadata.
+ */
+.clip-frame:has(.clip-stage[data-portrait]) {
+  width: fit-content;
+  max-width: 100%;
+}
+
+.clip-stage {
+  aspect-ratio: var(--clip-ratio, 16 / 9);
+  width: 100%;
+  max-height: 78svh;
+  margin-inline: auto;
+}
+
+.clip-stage[data-portrait] {
+  width: auto;
+  height: 78svh;
+  max-width: 100%;
+}
+
+/* Slow drift on the hero photograph so the section is never fully static. */
+@keyframes hero-drift {
+  from {
+    transform: scale(1.06) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(-1.5%, -1.5%, 0);
+  }
+}
+
+.hero-photo {
+  animation: hero-drift 26s ease-in-out infinite alternate;
+}
+
+/* Scroll-progress bar in the header. Uses a scroll-driven animation where
+   supported and simply stays hidden where it is not. */
+@keyframes scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.scroll-progress {
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    animation: scroll-progress linear;
+    animation-timeline: scroll(root block);
+  }
+}
+
+/*
+ * Gallery dialog. Entry and exit are pure CSS: `allow-discrete` keeps the
+ * element around long enough to transition out, and @starting-style supplies
+ * the "before open" state.
+ */
+.gallery-dialog {
+  /*
+   * Explicit layout instead of the user-agent's `fit-content` + `margin: auto`
+   * sizing. Tailwind's preflight zeroes the margin that centring relies on, and
+   * `fit-content` against `inset: 0` resolves inconsistently, which left the
+   * panel pinned to the left with a scrollbar. Filling the viewport and
+   * centring with grid is deterministic at every size.
+   */
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0.75rem;
+  border: 0;
+  background: transparent;
+  overflow: hidden;
+  transform-origin: center;
+
+  opacity: 0;
+  transform: scale(0.96) translateY(10px);
+  transition:
+    opacity 0.3s var(--ease-out-quint),
+    transform 0.35s var(--ease-out-quint),
+    overlay 0.35s allow-discrete,
+    display 0.35s allow-discrete;
+}
+
+.gallery-dialog[open] {
+  display: grid;
+  place-items: center;
+  opacity: 1;
+  transform: none;
+}
+
+@media (min-width: 640px) {
+  .gallery-dialog {
+    padding: 1rem;
+  }
+}
+
+@starting-style {
+  .gallery-dialog[open] {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+}
+
+.gallery-dialog::backdrop {
+  background: rgb(6 23 37 / 0);
+  backdrop-filter: blur(0px);
+  transition:
+    background-color 0.35s ease,
+    backdrop-filter 0.35s ease,
+    overlay 0.35s allow-discrete,
+    display 0.35s allow-discrete;
+}
+
+.gallery-dialog[open]::backdrop {
+  background: rgb(6 23 37 / 0.88);
+  backdrop-filter: blur(4px);
+}
+
+@starting-style {
+  .gallery-dialog[open]::backdrop {
+    background: rgb(6 23 37 / 0);
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* Slides are stacked and crossfaded rather than toggled with [hidden]. */
+.gallery-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(1.02);
+  transition:
+    opacity 0.45s var(--ease-out-quint),
+    transform 0.6s var(--ease-out-quint);
+  pointer-events: none;
+}
+
+.gallery-slide[data-active] {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-reveal,
+  .reveal-clip {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
+  .eyebrow::before {
+    transform: scaleX(1);
+  }
+
+  .hero-photo {
+    animation: none;
+  }
+}

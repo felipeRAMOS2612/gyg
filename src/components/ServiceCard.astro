@@ -1,0 +1,173 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import type { Service } from '../lib/services';
+
+interface Props {
+  service: Service;
+  index: number;
+  /**
+   * Wide side-by-side layout. Used when there are too few services to fill a
+   * grid row, which would otherwise leave most of the row empty.
+   */
+  featured?: boolean;
+  /**
+   * Narrow column. Used when four or more cards share a row, where the default
+   * cover height and padding would leave almost no width for the copy.
+   */
+  dense?: boolean;
+}
+
+const { service, index, featured = false, dense = false } = Astro.props;
+const number = String(index + 1).padStart(2, '0');
+const hasGallery = service.media.length > 0;
+const cover = service.cover;
+
+// A gallery can now hold videos too, so the badge counts each kind instead of
+// claiming everything is an image.
+const imageCount = service.media.filter((asset) => asset.kind === 'image').length;
+const videoCount = service.media.length - imageCount;
+const countLabel = [
+  imageCount > 0 && `${imageCount} ${imageCount === 1 ? 'imagen' : 'imágenes'}`,
+  videoCount > 0 && `${videoCount} ${videoCount === 1 ? 'video' : 'videos'}`,
+]
+  .filter(Boolean)
+  .join(' · ');
+
+const coverSizes = featured
+  ? '(min-width: 768px) 50vw, 92vw'
+  : dense
+    ? '(min-width: 1024px) 300px, (min-width: 640px) 46vw, 92vw'
+    : '(min-width: 1024px) 380px, (min-width: 640px) 46vw, 92vw';
+---
+
+<article
+  class:list={[
+    'animate-reveal group relative overflow-hidden rounded-lg border border-ink-200 bg-white transition duration-500 hover:border-ink-300 hover:shadow-xl hover:shadow-ink-900/8',
+    featured ? 'grid md:grid-cols-2' : 'flex flex-col hover:-translate-y-1',
+  ]}
+>
+  <!--
+    The whole cover is the primary way into the gallery; the text link below is
+    the same action, kept for people who scan for a label rather than an image.
+  -->
+  <button
+    type="button"
+    data-gallery-open={hasGallery ? service.slug : undefined}
+    disabled={!hasGallery}
+    aria-label={hasGallery ? `Ver galería de ${service.name}` : undefined}
+    class:list={[
+      'relative block w-full overflow-hidden bg-ink-100 enabled:cursor-pointer',
+      featured
+        ? 'aspect-4/3 md:aspect-auto md:h-full md:min-h-80'
+        : dense
+          ? 'aspect-4/3 lg:aspect-3/2'
+          : 'aspect-4/3',
+    ]}
+  >
+    {
+      cover ? (
+        cover.optimizable ? (
+          <Image
+            src={cover.url}
+            alt={cover.alt ?? service.name}
+            inferSize
+            widths={[400, 700, 1100]}
+            sizes={coverSizes}
+            format="webp"
+            quality={72}
+            loading="lazy"
+            decoding="async"
+            class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+        ) : (
+          <img
+            src={cover.url}
+            alt={cover.alt ?? service.name}
+            loading="lazy"
+            decoding="async"
+            class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          />
+        )
+      ) : (
+        <span class="flex h-full w-full items-center justify-center font-display text-5xl font-bold text-ink-300">
+          {number}
+        </span>
+      )
+    }
+
+    <span
+      class="pointer-events-none absolute inset-0 bg-linear-to-t from-ink-950/70 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+    >
+    </span>
+
+    <span
+      class="absolute left-0 top-0 bg-ink-900 px-3 py-1.5 font-display text-xs font-bold tracking-widest text-white transition-colors duration-500 group-hover:bg-accent-500"
+    >
+      {number}
+    </span>
+
+    {
+      hasGallery && (
+        <span class="absolute bottom-0 right-0 bg-white/95 px-3 py-1.5 text-xs font-medium text-ink-600">
+          {countLabel}
+        </span>
+      )
+    }
+  </button>
+
+  <div
+    class:list={[
+      'flex flex-1 flex-col',
+      featured ? 'justify-center p-8 lg:p-12' : dense ? 'p-6 lg:p-5' : 'p-6',
+    ]}
+  >
+    <h3
+      class:list={[
+        'font-display font-bold leading-snug transition-colors duration-300 group-hover:text-accent-600',
+        featured ? 'text-2xl lg:text-3xl' : dense ? 'text-xl lg:text-lg' : 'text-xl',
+      ]}
+    >
+      {service.name}
+    </h3>
+    {
+      service.description && (
+        <p
+          class:list={[
+            'mt-3 text-ink-600',
+            featured
+              ? 'max-w-md text-base leading-relaxed'
+              : dense
+                ? 'flex-1 text-[0.95rem] leading-relaxed lg:text-[0.875rem]'
+                : 'flex-1 text-[0.95rem] leading-relaxed',
+          ]}
+        >
+          {service.description}
+        </p>
+      )
+    }
+
+    {
+      hasGallery ? (
+        <button
+          type="button"
+          data-gallery-open={service.slug}
+          class="mt-4 inline-flex min-h-11 items-center gap-2 self-start text-sm font-semibold text-accent-600"
+        >
+          <span class="relative">
+            Ver galería
+            <span class="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent-500 transition-transform duration-300 group-hover:scale-x-100" />
+          </span>
+          <Icon
+            name="arrow-right"
+            class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+          />
+        </button>
+      ) : (
+        <span class="mt-4 flex min-h-11 items-center self-start text-sm text-ink-400">
+          Galería disponible próximamente
+        </span>
+      )
+    }
+  </div>
+</article>

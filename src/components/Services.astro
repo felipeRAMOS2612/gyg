@@ -1,0 +1,196 @@
+---
+import ServiceCard from './ServiceCard.astro';
+import ServiceGallery from './ServiceGallery.astro';
+import Icon from './Icon.astro';
+import { getServices } from '../lib/services';
+import { site } from '../lib/site';
+
+// Build-time fetch. getServices never throws: on failure it returns [] and the
+// fallback below renders instead of breaking the page.
+const services = await getServices();
+
+// The grid tracks the number of services so a row is never mostly empty and a
+// full catalogue is never one card short of fitting: a single service becomes a
+// full-width feature, and four fit on one row instead of wrapping the last one
+// onto a line of its own.
+const featured = services.length === 1;
+const gridColumns =
+  {
+    2: 'sm:grid-cols-2',
+    3: 'sm:grid-cols-2 lg:grid-cols-3',
+    4: 'sm:grid-cols-2 lg:grid-cols-4',
+  }[services.length] ?? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+// Four across leaves each card much narrower, so the cover gives up some height
+// and the body tightens instead of the text turning into a column of two words.
+const dense = services.length >= 4;
+---
+
+<section id="servicios" class="section border-y border-ink-200 bg-ink-50">
+  <div class="shell">
+    <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+      <div class="max-w-2xl">
+        <p class="eyebrow animate-reveal reveal-fade">Servicios</p>
+        <h2
+          class="animate-reveal reveal-clip mt-5 font-display text-[clamp(1.85rem,4vw,2.9rem)] font-bold leading-[1.1]"
+          style="--reveal-delay:90ms"
+        >
+          Soluciones de limpieza industrial
+        </h2>
+        <p class="animate-reveal mt-5 text-base leading-relaxed text-ink-600" style="--reveal-delay:190ms">
+          Cada trabajo se ejecuta con maquinaria propia y registro fotográfico. Revisa la galería de
+          cada servicio para ver resultados reales en terreno.
+        </p>
+      </div>
+
+      <a
+        href={site.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="animate-reveal reveal-right group inline-flex shrink-0 items-center gap-2 self-start rounded-md border border-ink-300 px-6 py-3.5 text-sm font-semibold text-ink-900 transition duration-300 hover:border-ink-900 hover:bg-ink-900 hover:text-white md:self-auto"
+        style="--reveal-delay:260ms"
+      >
+        Consultar por un servicio
+        <Icon name="arrow-right" class="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </a>
+    </div>
+
+    {
+      services.length > 0 ? (
+        <div
+          class:list={['reveal-stagger mt-12 grid gap-6', !featured && gridColumns]}
+          style="--reveal-step:90ms"
+        >
+          {services.map((service, index) => (
+            <ServiceCard service={service} index={index} featured={featured} dense={dense} />
+          ))}
+        </div>
+      ) : (
+        <div class="animate-reveal reveal-scale mt-12 rounded-lg border border-dashed border-ink-300 bg-white px-8 py-16 text-center">
+          <h3 class="font-display text-xl font-bold">Estamos actualizando nuestro catálogo</h3>
+          <p class="mx-auto mt-3 max-w-md text-ink-600">
+            Escríbenos y te detallamos todos los servicios de limpieza y desinfección industrial que
+            realizamos.
+          </p>
+          <a
+            href={site.whatsapp}
+            target="_blank"
+            rel="noopener"
+            class="btn-sweep mt-8 inline-flex items-center gap-2 rounded-md bg-accent-500 px-6 py-3.5 font-semibold text-white transition-transform duration-300 hover:-translate-y-0.5"
+          >
+            <Icon name="whatsapp" class="h-5 w-5" />
+            Contactar por WhatsApp
+          </a>
+        </div>
+      )
+    }
+  </div>
+
+  {services.filter((service) => service.media.length > 0).map((service) => <ServiceGallery service={service} />)}
+</section>
+
+<script>
+  // One delegated controller for every gallery dialog. Uses the native <dialog>
+  // element, so focus trapping, Escape and the backdrop come from the platform;
+  // opening and closing are animated purely in CSS.
+  type Gallery = {
+    dialog: HTMLDialogElement;
+    slides: HTMLElement[];
+    thumbs: HTMLElement[];
+    videos: HTMLVideoElement[];
+    counter: HTMLElement | null;
+    noun: HTMLElement | null;
+    caption: HTMLElement | null;
+    index: number;
+  };
+
+  const galleries = new Map<string, Gallery>();
+
+  document.querySelectorAll<HTMLDialogElement>('[data-gallery]').forEach((dialog) => {
+    const slug = dialog.dataset.gallery;
+    if (!slug) return;
+
+    const gallery: Gallery = {
+      dialog,
+      slides: Array.from(dialog.querySelectorAll<HTMLElement>('.gallery-slide')),
+      thumbs: Array.from(dialog.querySelectorAll<HTMLElement>('[data-gallery-thumb]')),
+      videos: Array.from(dialog.querySelectorAll<HTMLVideoElement>('[data-gallery-video]')),
+      counter: dialog.querySelector<HTMLElement>('[data-gallery-counter]'),
+      noun: dialog.querySelector<HTMLElement>('[data-gallery-noun]'),
+      caption: dialog.querySelector<HTMLElement>('[data-gallery-caption]'),
+      index: 0,
+    };
+
+    /** A clip left running behind a hidden slide would keep playing unseen. */
+    const pauseVideos = () => gallery.videos.forEach((video) => video.pause());
+
+    const show = (next: number) => {
+      const total = gallery.slides.length;
+      if (total === 0) return;
+      pauseVideos();
+      gallery.index = (next + total) % total;
+
+      gallery.slides.forEach((slide, i) => slide.toggleAttribute('data-active', i === gallery.index));
+      gallery.thumbs.forEach((thumb, i) => thumb.toggleAttribute('data-active', i === gallery.index));
+
+      const active = gallery.slides[gallery.index];
+      if (gallery.counter) gallery.counter.textContent = String(gallery.index + 1);
+      if (gallery.noun) gallery.noun.textContent = active?.dataset.noun ?? 'imagen';
+      if (gallery.caption) gallery.caption.textContent = active?.dataset.caption ?? '';
+    };
+
+    dialog.querySelector('[data-gallery-prev]')?.addEventListener('click', () => show(gallery.index - 1));
+    dialog.querySelector('[data-gallery-next]')?.addEventListener('click', () => show(gallery.index + 1));
+    dialog.querySelector('[data-gallery-close]')?.addEventListener('click', () => dialog.close());
+    gallery.thumbs.forEach((thumb, i) => thumb.addEventListener('click', () => show(i)));
+
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight') show(gallery.index + 1);
+      if (event.key === 'ArrowLeft') show(gallery.index - 1);
+    });
+
+    // Horizontal swipe on the image stage.
+    const stage = dialog.querySelector<HTMLElement>('[data-gallery-stage]');
+    let startX: number | null = null;
+
+    stage?.addEventListener('pointerdown', (event) => {
+      // Dragging a video's seek bar must not also change slides.
+      if ((event.target as HTMLElement)?.closest('video')) {
+        startX = null;
+        return;
+      }
+      startX = event.clientX;
+    });
+
+    stage?.addEventListener('pointerup', (event) => {
+      if (startX === null) return;
+      const delta = event.clientX - startX;
+      startX = null;
+      if (Math.abs(delta) < 45) return;
+      show(delta < 0 ? gallery.index + 1 : gallery.index - 1);
+    });
+
+    // Clicking the backdrop closes: the dialog itself is a transparent wrapper,
+    // so a click landing on it never landed on the panel.
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener('close', () => {
+      document.body.style.overflow = '';
+      pauseVideos();
+    });
+
+    show(0);
+    galleries.set(slug, gallery);
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-gallery-open]').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      const gallery = galleries.get(trigger.dataset.galleryOpen ?? '');
+      if (!gallery) return;
+      document.body.style.overflow = 'hidden';
+      gallery.dialog.showModal();
+    });
+  });
+</script>

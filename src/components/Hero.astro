@@ -1,0 +1,102 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { site } from '../lib/site';
+import heroPhoto from '../assets/hero-industrial.jpeg';
+---
+
+<section
+  id="inicio"
+  class="relative flex min-h-svh items-center overflow-hidden bg-ink-900"
+>
+  <!--
+    The hero image is the page's largest paint, so it is eager with a high
+    fetch priority. The slow drift comes from CSS and pauses under
+    prefers-reduced-motion.
+  -->
+  <Image
+    src={heroPhoto}
+    alt=""
+    widths={[768, 1280, 1920]}
+    sizes="100vw"
+    format="webp"
+    quality={78}
+    loading="eager"
+    fetchpriority="high"
+    decoding="async"
+    class="hero-photo absolute inset-0 h-full w-full object-cover object-center contrast-[1.08] saturate-[1.1]"
+  />
+
+  <!-- Even base wash. Heavier on small screens, where the copy spans the full
+       width and cannot rely on a side gradient. -->
+  <div class="absolute inset-0 bg-ink-950/22 sm:bg-ink-950/16"></div>
+
+  <!-- Darkens only the left column, behind the headline. The right side stays
+       close to the photograph's own brightness. -->
+  <div
+    class="absolute inset-0 hidden bg-linear-to-r from-ink-950/85 from-5% via-ink-950/28 via-50% to-transparent sm:block"
+  >
+  </div>
+
+  <!-- Grounds the copy at the bottom edge. -->
+  <div class="absolute inset-0 bg-linear-to-t from-ink-950/90 via-ink-950/22 via-42% to-transparent"></div>
+
+  <div class="blueprint absolute inset-0 opacity-25"></div>
+
+  <div class="copy-on-photo shell relative z-10 py-24 sm:py-32">
+    <p class="eyebrow eyebrow-invert animate-reveal reveal-fade max-w-md sm:max-w-none">
+      Limpieza y mantención de tubería y Construcciones varias
+    </p>
+
+    <h1
+      class="animate-reveal reveal-clip mt-5 max-w-3xl font-display text-[clamp(2.1rem,5.5vw,4rem)] font-bold leading-[1.06] text-white"
+      style="--reveal-delay:90ms"
+    >
+      La limpieza profesional que tu empresa necesita
+    </h1>
+
+    <p
+      class="animate-reveal mt-5 max-w-2xl border-l-2 border-accent-500 pl-5 text-base leading-relaxed text-ink-200 sm:text-lg"
+      style="--reveal-delay:220ms"
+    >
+      En un entorno industrial, la limpieza no es un detalle: es seguridad, eficiencia y confianza.
+      Entregamos soluciones profesionales para mantener tus espacios en las mejores condiciones.
+    </p>
+
+    <div
+      class="animate-reveal mt-7 flex flex-wrap items-center gap-3 sm:mt-9"
+      style="--reveal-delay:320ms"
+    >
+      <a
+        href={site.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="btn-sweep inline-flex items-center gap-2.5 rounded-md bg-accent-500 px-6 py-3.5 font-semibold text-white transition-transform duration-300 hover:-translate-y-0.5"
+      >
+        <Icon name="whatsapp" class="h-5 w-5" />
+        Solicitar cotización
+      </a>
+      <a
+        href="#servicios"
+        class="group inline-flex items-center gap-2.5 rounded-md border border-white/25 px-6 py-3.5 font-semibold text-white transition duration-300 hover:border-white/60 hover:bg-white/10"
+      >
+        Ver servicios
+        <Icon
+          name="arrow-right"
+          class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
+        />
+      </a>
+    </div>
+  </div>
+
+  <a
+    href="#compromiso"
+    class="group absolute bottom-8 right-8 z-10 hidden h-12 w-12 items-center justify-center rounded-full border border-white/25 text-white transition hover:border-white/60 hover:bg-white/10 lg:inline-flex"
+    aria-label="Ir a la siguiente sección"
+  >
+    <Icon
+      name="arrow-down"
+      class="h-5 w-5 transition-transform duration-500 group-hover:translate-y-1"
+    />
+  </a>
+</section>

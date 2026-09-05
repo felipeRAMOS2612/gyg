@@ -1,0 +1,151 @@
+---
+import { Image } from 'astro:assets';
+import Icon from './Icon.astro';
+import { site } from '../lib/site';
+import operatorPhoto from '../assets/contacto-operario.jpeg';
+
+const channels = [
+  {
+    icon: 'whatsapp' as const,
+    label: 'WhatsApp',
+    value: site.phone,
+    href: site.whatsapp,
+    primary: true,
+  },
+  {
+    icon: 'mail' as const,
+    label: 'Correo',
+    value: site.email,
+    href: `mailto:${site.email}`,
+    primary: false,
+  },
+];
+---
+
+<!-- Slogan band: the client's brand line, given its own quiet moment. -->
+<section class="relative overflow-hidden bg-ink-900 py-12 sm:py-16">
+  <div class="blueprint absolute inset-0 opacity-70"></div>
+  <p
+    class="shell animate-reveal reveal-scale relative text-center font-display text-[clamp(1.4rem,3.6vw,2.4rem)] font-bold uppercase leading-tight tracking-tight text-white"
+  >
+    Limpieza que se nota.<br class="sm:hidden" />
+    <span class="text-accent-500"> Calidad que se confía.</span>
+  </p>
+</section>
+
+<section id="contacto" class="section relative overflow-hidden bg-ink-950">
+  <!--
+    One photograph only: the operator on the right, feathered into the solid
+    navy band. There is no background frame behind the copy any more, so the
+    scrims that used to buy legibility over a bright photo are gone with it —
+    white type on `ink-950` clears AA on its own, and stacking washes over a
+    solid colour would only mute the one image that is left.
+
+    The crop is anchored high: `object-position` keeps the face behind the
+    shield and the raised thumb inside the visible window, which a centred crop
+    on a 720x1599 standing figure would push out of view.
+
+    Desktop only. Below `lg` the copy needs the full width and the band is
+    nearly portrait, so the photograph there would only crowd it.
+  -->
+  <div
+    class="contact-figure pointer-events-none absolute inset-y-0 right-0 hidden w-[54%] max-w-[40rem] lg:block"
+    aria-hidden="true"
+  >
+    <div class="contact-figure-fade relative h-full w-full">
+      <Image
+        src={operatorPhoto}
+        alt=""
+        widths={[480, 720]}
+        sizes="40rem"
+        format="webp"
+        quality={74}
+        loading="lazy"
+        decoding="async"
+        class="h-full w-full object-cover object-[50%_20%] contrast-[1.04] saturate-[0.88]"
+      />
+
+      <!--
+        A thin navy wash so the frame's overcast daylight settles into the
+        band's palette instead of glowing against it. It sits inside the masked
+        wrapper, so it feathers away with the photo and adds no edge of its own.
+      -->
+      <div class="absolute inset-0 bg-ink-950/25"></div>
+    </div>
+  </div>
+
+  <div class="blueprint absolute inset-0 opacity-25"></div>
+
+  <div class="shell relative">
+    <div class="max-w-xl">
+      <p class="eyebrow eyebrow-invert animate-reveal reveal-fade">Contacto</p>
+      <h2
+        class="animate-reveal reveal-clip mt-5 font-display text-[clamp(1.85rem,4vw,2.9rem)] font-bold leading-[1.1] text-white"
+        style="--reveal-delay:90ms"
+      >
+        Contáctanos y conoce nuestras soluciones
+      </h2>
+      <p
+        class="animate-reveal mt-6 text-base leading-relaxed text-ink-200"
+        style="--reveal-delay:190ms"
+      >
+        Respondemos con rapidez por WhatsApp o correo. Si se trata de una emergencia, escríbenos
+        directamente y coordinamos la visita a terreno.
+      </p>
+
+      <ul class="reveal-stagger mt-10 grid gap-3 sm:grid-cols-2" style="--reveal-step:80ms">
+        {
+          channels.map((channel) => {
+            const isExternal = channel.href.startsWith('http');
+            return (
+              <li class="animate-reveal reveal-scale">
+                <a
+                  href={channel.href}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener' : undefined}
+                  class:list={[
+                    'flex h-full items-center gap-4 rounded-md border px-5 py-4 transition',
+                    // The secondary card lifts with a faint white instead of a
+                    // translucent ink: on the solid ink-950 band a dark wash is
+                    // invisible, and there is no photo left to blur behind it.
+                    channel.primary
+                      ? 'border-accent-500 bg-accent-500/20 hover:bg-accent-500/30'
+                      : 'border-white/20 bg-white/5 hover:border-white/45 hover:bg-white/10',
+                  ]}
+                >
+                  <span
+                    class:list={[
+                      'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md',
+                      channel.primary ? 'bg-accent-500 text-white' : 'bg-white/10 text-ink-100',
+                    ]}
+                  >
+                    <Icon name={channel.icon} class="h-5 w-5" />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-[0.65rem] font-bold uppercase tracking-[0.15em] text-ink-300">
+                      {channel.label}
+                    </span>
+                    <span class="block truncate text-sm font-medium text-white">
+                      {channel.value}
+                    </span>
+                  </span>
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <a
+        href={site.whatsapp}
+        target="_blank"
+        rel="noopener"
+        class="btn-sweep animate-reveal mt-10 inline-flex items-center gap-2.5 rounded-md bg-accent-500 px-7 py-3.5 font-semibold text-white transition-transform duration-300 hover:-translate-y-0.5"
+        style="--reveal-delay:420ms"
+      >
+        <Icon name="whatsapp" class="h-5 w-5" />
+        Solicitar cotización
+      </a>
+    </div>
+  </div>
+</section>
