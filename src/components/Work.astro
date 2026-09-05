@@ -94,11 +94,11 @@ const multiple = items.length > 1;
               {item.kind === 'video' ? (
                 <>
                   {/*
-                    No `controls` until playback starts. Mobile browsers paint
-                    their own play overlay inside the element's shadow DOM, and
-                    that overlay always covers the button below no matter what
-                    z-index it is given. The script adds the attribute on play,
-                    so the visitor still gets real controls once the clip runs.
+                    `controls` stays on: without it there is no way to pause.
+                    Mobile browsers also paint a large play button of their own
+                    inside the element's shadow DOM, and no z-index on the
+                    button below can beat it — different tree. global.css hides
+                    that one pseudo-element and keeps the control bar.
                   */}
                   <video
                     data-clip
@@ -108,12 +108,13 @@ const multiple = items.length > 1;
                     aria-label={item.alt ?? undefined}
                     preload="metadata"
                     playsinline
+                    controls
                   />
 
                   <button
                     type="button"
                     data-clip-play
-                    class="absolute inset-0 grid place-items-center bg-ink-950/40 transition duration-500 hover:bg-ink-950/20"
+                    class="absolute inset-0 z-10 grid place-items-center bg-ink-950/40 transition duration-500 hover:bg-ink-950/20"
                   >
                     <span class="sr-only">Reproducir el video</span>
                     <span
@@ -193,9 +194,6 @@ const multiple = items.length > 1;
 
     button?.addEventListener('click', () => {
       button.hidden = true;
-      // Native controls only exist from here on, so their overlay can never
-      // sit on top of the button that started playback.
-      video.controls = true;
       void video.play();
     });
 

@@ -352,13 +352,20 @@
 }
 
 /*
- * Belt and braces for the mobile play overlay. The markup already withholds
- * `controls` until playback starts, which is what actually removes the native
- * button; WebKit still paints this pseudo-element in a few states, and it would
- * cover the custom control underneath it.
+ * Hide only the big native play button, never the control bar.
+ *
+ * `controls` has to stay on the element or there is no way to pause a clip. The
+ * cost is that mobile browsers also paint their own large play button in the
+ * middle of the video, inside the shadow DOM, where the custom button cannot
+ * reach it with a z-index. These two pseudo-elements are that button — Chrome
+ * on Android names it one way, Safari on iOS the other — and removing them
+ * leaves the seek and pause bar untouched.
  */
-.clip-stage video::-webkit-media-controls-overlay-play-button {
-  display: none;
+.clip-stage video::-webkit-media-controls-overlay-play-button,
+.clip-stage video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 /* Slow drift on the hero photograph so the section is never fully static. */
