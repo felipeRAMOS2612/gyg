@@ -1,8 +1,0 @@
-[build]
-  command = "npm run build"
-  publish = "dist"
-
-[build.environment]
-  # Astro 7 requires Node >=22.12.0. Without this Netlify falls back to the
-  # site's default runtime, which fails the install before the build starts.
-  NODE_VERSION = "22"

@@ -1,28 +1,37 @@
--- Trigger a Netlify rebuild whenever the landing's content changes.
+-- Trigger a site rebuild whenever the landing's content changes.
 --
 -- The site is statically generated: `getServices()` and `getGeneralMedia()` run
 -- at build time, so editing a row in the admin changes the database but not the
--- published HTML. These triggers close that gap by asking Netlify for a new
+-- published HTML. These triggers close that gap by asking the host for a new
 -- build as soon as the content actually changes.
 --
--- Run this file once in the Supabase SQL Editor, AFTER creating the build hook
--- in Netlify (see supabase/README.md for the steps).
+-- The host is named nowhere below. A deploy hook is just a URL that starts a
+-- build when it receives a POST, and every provider offers one, so moving
+-- between them is a change of secret rather than a change of schema.
+--
+-- Run this file once in the Supabase SQL Editor, AFTER creating the deploy hook
+-- (see supabase/README.md for the steps).
 
--- pg_net issues the HTTP call asynchronously, so a slow Netlify response can
--- never block or fail the admin's write.
+-- pg_net issues the HTTP call asynchronously, so a slow host can never block or
+-- fail the admin's write.
 create extension if not exists pg_net with schema extensions;
 
--- The build hook URL is a credential: anyone holding it can spend the site's
--- build minutes. It lives in Vault, never inline in a function body.
--- Replace the placeholder with the URL Netlify gave you, run this line alone,
--- then delete it from your editor so it does not linger in the query history.
+-- Drop the earlier Netlify-specific names, if this database ever ran them.
+drop trigger if exists media_rebuild on public.media;
+drop trigger if exists services_rebuild on public.services;
+drop function if exists public.request_netlify_rebuild;
+
+-- The deploy hook URL is a credential: anyone holding it can spend the site's
+-- build allowance. It lives in Vault, never inline in a function body.
+-- Replace the placeholder with the URL your host gave you, run this statement
+-- alone, then clear it from the editor so it does not linger in the history.
 select vault.create_secret(
-  'PASTE_YOUR_NETLIFY_BUILD_HOOK_URL_HERE',
-  'netlify_build_hook',
-  'Netlify build hook that redeploys the GyG landing'
+  'PASTE_YOUR_DEPLOY_HOOK_URL_HERE',
+  'site_deploy_hook',
+  'Deploy hook that rebuilds the GyG landing'
 );
 
-create or replace function public.request_netlify_rebuild()
+create or replace function public.request_site_rebuild()
 returns trigger
 language plpgsql
 security definer
@@ -36,9 +45,11 @@ begin
   select decrypted_secret
     into hook_url
     from vault.decrypted_secrets
-   where name = 'netlify_build_hook';
+   where name = 'site_deploy_hook';
 
-  -- No secret configured yet: stay silent rather than failing the admin's write.
+  -- No secret configured yet: stay silent rather than failing the admin's
+  -- write. This is also how the hook is paused when the build allowance runs
+  -- out — delete the secret and content edits stop asking for deploys.
   if hook_url is null then
     return null;
   end if;
@@ -56,19 +67,17 @@ begin
 end;
 $$;
 
-comment on function public.request_netlify_rebuild is
-  'Statement-level trigger function: asks Netlify to rebuild the landing after a content change.';
+comment on function public.request_site_rebuild is
+  'Statement-level trigger function: asks the host to rebuild the landing after a content change.';
 
 -- FOR EACH STATEMENT, not FOR EACH ROW. Reordering ten gallery images is one
 -- UPDATE touching ten rows; row-level firing would queue ten redundant builds.
-drop trigger if exists media_rebuild on public.media;
 create trigger media_rebuild
   after insert or update or delete on public.media
   for each statement
-  execute function public.request_netlify_rebuild();
+  execute function public.request_site_rebuild();
 
-drop trigger if exists services_rebuild on public.services;
 create trigger services_rebuild
   after insert or update or delete on public.services
   for each statement
-  execute function public.request_netlify_rebuild();
+  execute function public.request_site_rebuild();
