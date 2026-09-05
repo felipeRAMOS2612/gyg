@@ -351,6 +351,16 @@
   max-width: 100%;
 }
 
+/*
+ * Belt and braces for the mobile play overlay. The markup already withholds
+ * `controls` until playback starts, which is what actually removes the native
+ * button; WebKit still paints this pseudo-element in a few states, and it would
+ * cover the custom control underneath it.
+ */
+.clip-stage video::-webkit-media-controls-overlay-play-button {
+  display: none;
+}
+
 /* Slow drift on the hero photograph so the section is never fully static. */
 @keyframes hero-drift {
   from {

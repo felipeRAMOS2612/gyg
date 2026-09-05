@@ -93,6 +93,13 @@ const multiple = items.length > 1;
             >
               {item.kind === 'video' ? (
                 <>
+                  {/*
+                    No `controls` until playback starts. Mobile browsers paint
+                    their own play overlay inside the element's shadow DOM, and
+                    that overlay always covers the button below no matter what
+                    z-index it is given. The script adds the attribute on play,
+                    so the visitor still gets real controls once the clip runs.
+                  */}
                   <video
                     data-clip
                     class="h-full w-full object-contain"
@@ -101,7 +108,6 @@ const multiple = items.length > 1;
                     aria-label={item.alt ?? undefined}
                     preload="metadata"
                     playsinline
-                    controls
                   />
 
                   <button
@@ -168,8 +174,28 @@ const multiple = items.length > 1;
     if (video.readyState >= 1) applyRatio();
     video.addEventListener('loadedmetadata', applyRatio, { once: true });
 
+    // `preload="metadata"` is only a hint, and mobile browsers ignore it to
+    // save data: no metadata means no first frame, so a clip with no poster
+    // renders as an empty dark rectangle. Calling load() once the stage is
+    // actually near the viewport asks for that metadata explicitly, which is
+    // what makes the `#t=0.1` fragment resolve into a visible frame.
+    if (video.readyState < 1) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((entry) => entry.isIntersecting)) return;
+          observer.disconnect();
+          video.load();
+        },
+        { rootMargin: '200px' },
+      );
+      observer.observe(stage);
+    }
+
     button?.addEventListener('click', () => {
       button.hidden = true;
+      // Native controls only exist from here on, so their overlay can never
+      // sit on top of the button that started playback.
+      video.controls = true;
       void video.play();
     });
 
