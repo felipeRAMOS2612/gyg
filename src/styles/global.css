@@ -352,21 +352,11 @@
 }
 
 /*
- * Hide only the big native play button, never the control bar.
- *
- * `controls` has to stay on the element or there is no way to pause a clip. The
- * cost is that mobile browsers also paint their own large play button in the
- * middle of the video, inside the shadow DOM, where the custom button cannot
- * reach it with a z-index. These two pseudo-elements are that button — Chrome
- * on Android names it one way, Safari on iOS the other — and removing them
- * leaves the seek and pause bar untouched.
+ * The native play button in the middle of the video is left visible on purpose.
+ * It is the only affordance mobile browsers guarantee, and hiding it removed a
+ * control the visitor could rely on. The custom button sits above it while the
+ * clip has not started, and uncovers it once playback begins.
  */
-.clip-stage video::-webkit-media-controls-overlay-play-button,
-.clip-stage video::-webkit-media-controls-start-playback-button {
-  display: none !important;
-  -webkit-appearance: none;
-  appearance: none;
-}
 
 /* Slow drift on the hero photograph so the section is never fully static. */
 @keyframes hero-drift {

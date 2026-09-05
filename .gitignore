@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # local tooling cache
 .atl/
+
+# Locally repaired media, uploaded through the admin rather than committed.
+video-reparado/
