@@ -95,10 +95,11 @@ const multiple = items.length > 1;
                 <>
                   {/*
                     `controls` stays on: without it there is no way to pause.
-                    Mobile browsers also paint a large play button of their own
-                    inside the element's shadow DOM, and no z-index on the
-                    button below can beat it — different tree. global.css hides
-                    that one pseudo-element and keeps the control bar.
+
+                    `muted` because these clips carry site noise and nothing a
+                    visitor needs to hear. It also keeps a corrupt audio track
+                    from ever reaching a mobile hardware decoder, which is what
+                    stopped one clip from rendering at all.
                   */}
                   <video
                     data-clip
@@ -107,6 +108,7 @@ const multiple = items.length > 1;
                     poster={item.poster}
                     aria-label={item.alt ?? undefined}
                     preload="metadata"
+                    muted
                     playsinline
                     controls
                   />
