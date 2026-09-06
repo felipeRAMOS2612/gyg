@@ -15,9 +15,16 @@ receives a POST, so switching providers means replacing one secret.
 
 **Cloudflare Pages** — the current host:
 
-1. Open the project → **Settings → Builds & deployments → Deploy hooks**.
-2. **Add deploy hook**. Name: `Supabase content change`. Branch: `main`.
-3. Copy the generated URL.
+1. **Workers & Pages** → the **landing** project, not the admin. The hook has to
+   rebuild the site that renders the content; pointing it at the admin rebuilds
+   the wrong project and the landing never changes.
+2. **Settings → Builds → Add deploy hook**.
+3. Name: `Supabase content change`. Branch: `main`.
+4. Copy the generated URL.
+
+The URL carries no authentication of its own — holding it is enough to start a
+build. If it ever leaks, delete the hook and create a new one, then update the
+Vault secret.
 
 **Netlify**, if the site ever moves back: **Site configuration → Build & deploy
 → Build hooks → Add build hook**, same two fields.
